@@ -202,5 +202,5 @@ def get_tfidf(input):
 
     query = cosine_similarity(url, input)
 
-    print(query)
+    # print(query)
     return query

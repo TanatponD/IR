@@ -1,0 +1,29 @@
+<html>
+
+<head>
+    <title> Positional Index </title>
+    <link href="{{ url_for('static',filename='styles/main2.css') }}" rel="stylesheet" />
+</head>
+
+<body>
+    
+    <h1>Positional</h1>
+    <h2>List Search</h2>
+
+    <table class="container">
+        {% for key,value in result.items(): %}
+        <thead>
+
+        </thead>
+        <tbody>
+            <tr>
+                <td><a style="color:rgb(170, 174, 177)" href="{{value}}">{{key}} : {{value}}</a> </td>
+            </tr>
+        </tbody>
+        {% endfor %}
+    </table>
+
+
+</body>
+
+</html>
