@@ -54,7 +54,7 @@ def get_tfidf(input):
             try:
                 w = num2words(int(w))
             except:
-                a = 0
+                pass
             new_text = new_text + " " + w
         new_text = np.char.replace(new_text, "-", " ")
         return new_text
@@ -80,7 +80,7 @@ def get_tfidf(input):
     arrayList = []
     url = 98
     df = pd.read_csv('test.csv')
-    
+
     for i in range(0, url):
         arrayURL.append(df['url'][i])
 
@@ -138,14 +138,13 @@ def get_tfidf(input):
     for i in tf_idf:
         tf_idf[i] *= alpha
 
-
     """# TF-IDF Cosine Similarity ranking"""
 
     def cosine_sim(a, b):
         cos_sim = np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b))
         return cos_sim
 
-    """### Vectorising tf-idf"""
+    """### Vector tf-idf"""
 
     D = np.zeros((url, wordsize))
     for i in tf_idf:
@@ -161,8 +160,6 @@ def get_tfidf(input):
 
         counter = Counter(tokens)
         words_count = len(tokens)
-
-        query_weights = {}
 
         for token in np.unique(tokens):
 
@@ -197,7 +194,6 @@ def get_tfidf(input):
         for x in range(0, url):
             ranking[out[x]] = arrayURL[x]
             # print(arrayURL[x])
-
         return tokens, dict(sorted(ranking.items())), times, sorted(d_cosines, reverse=True)
 
     query = cosine_similarity(url, input)

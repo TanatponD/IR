@@ -15,3 +15,4 @@ def wildcard(input):
 
     print(Ranking)
     return Ranking
+

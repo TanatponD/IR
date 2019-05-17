@@ -2,6 +2,7 @@ import re
 import json
 from nltk.corpus import stopwords
 import pandas as pd
+import time
 
 
 df = pd.read_csv('test.csv')  # อ่านไฟล์ csv เพื่อดึง URL มา
@@ -67,7 +68,7 @@ def intersec(search, dicts):
 
 
 def Searching(wordsearchs):
-
+    start = time.time()
     geturl = {}
     word = wordsearchs.lower()  # ทำให้เป็นตัวพิมพ์เล็ก
     wordsearchs = stem(word)  # ตัด stopword ออก
@@ -101,6 +102,8 @@ def Searching(wordsearchs):
 
                     geturl[i] = df['url'][i-1]
                     print(df['url'][i-1])
-                return geturl
+
         if flag == 0:
             print("Not Match")
+    totaltime = time.time()-start
+    return geturl
