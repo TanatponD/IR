@@ -1,17 +1,29 @@
+# -*- coding: utf-8 -*-
+"""## Imports"""
+
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 from collections import Counter
 from num2words import num2words
+
+import nltk
+import os
+import string
 import numpy as np
+import copy
+import pandas
 import pandas as pd
+import pickle
+import re
 import math
 import csv
 import time
+import psutil
 
 
-def get_tfidf(input):
-    start = time.time()
+def readfile(Input):
+    start_time = time.time()
 
     """# Preprocessing"""
 
@@ -54,7 +66,7 @@ def get_tfidf(input):
             try:
                 w = num2words(int(w))
             except:
-                pass
+                a = 0
             new_text = new_text + " " + w
         new_text = np.char.replace(new_text, "-", " ")
         return new_text
@@ -76,43 +88,60 @@ def get_tfidf(input):
         return data
 
     alpha = 0.3
-    arrayURL = []
+    DocID = []
     arrayList = []
-    url = 98
-    df = pd.read_csv('test.csv')
+    CutarrayList = []
 
+    URLDatas = []
+    arrayURLDatas = []
+    CutarrayListDatas = []
+    times = ''
+    timesFile = []
+    CountBinay = []
+    number = []
+    url = 98
+    df = pandas.read_csv('test.csv')
+    # for i in range(0,len(df)):
     for i in range(0, url):
-        arrayURL.append(df['url'][i])
+        DocID.append(df['url'][i])
 
     with open('DataSetTest.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
             arrayList.append(row)
 
-    df = {}
+    DF = {}
 
     for i in range(0, url):
         tokens = arrayList[i]
         for w in tokens:
             try:
-                df[w].add(i)
+                DF[w].add(i)
             except:
-                df[w] = {i}
+                DF[w] = {i}
 
-    for i in df:
-        df[i] = len(df[i])
+    for i in DF:
+        DF[i] = len(DF[i])
 
-    wordsize = len(df)
-    wordsize
-    totalword = [x for x in df]
+    # print(DF)
+    # DF
+
+    total_vocab_size = len(DF)
+
+    total_vocab_size
+
+    total_vocab = [x for x in DF]
+
+    # print([x for x in DF])
+    # print(total_vocab[:20])
 
     def doc_freq(word):
-        count = 0
+        c = 0
         try:
-            count = df[word]
+            c = DF[word]
         except:
             pass
-        return count
+        return c
 
     """### Calculating TF-IDF for body, we will consider this as the actual tf-idf as we will add the title weight to this."""
 
@@ -120,46 +149,64 @@ def get_tfidf(input):
     tf_idf = {}
 
     for i in range(0, url):
+
         tokens = arrayList[i]
+
         counter = Counter(tokens)
         words_count = len(tokens)
+
+        # print('tokens : ', tokens)
+        # print('counter : ', counter)
+        # print('words_count : ', words_count)
 
         for token in np.unique(tokens):
 
             tf = counter[token]/words_count
             df = doc_freq(token)
             idf = np.log((url+1)/(df+1))
+
             tf_idf[doc, token] = tf*idf
 
         doc += 1
+
+    # print(type(tf_idf))
+    # print(len(tf_idf))
+    # print(tf_idf[(0,Input)])
+
+    # tf_idf
 
     """## Merging the TF-IDF according to weights"""
 
     for i in tf_idf:
         tf_idf[i] *= alpha
 
-    """# TF-IDF Cosine Similarity ranking"""
+    # print(type(tf_idf))
+    # print(tf_idf)
+
+    """# TF-IDF Cosine Similarity Ranking"""
 
     def cosine_sim(a, b):
         cos_sim = np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b))
         return cos_sim
 
-    """### Vector tf-idf"""
+    """### Vectorising tf-idf"""
 
-    D = np.zeros((url, wordsize))
+    D = np.zeros((url, total_vocab_size))
     for i in tf_idf:
         try:
-            idx = totalword.index(i[1])
-            D[i[0]][idx] = tf_idf[i]
+            ind = total_vocab.index(i[1])
+            D[i[0]][ind] = tf_idf[i]
         except:
             pass
 
     def gen_vector(tokens):
 
-        query = np.zeros((len(totalword)))
+        Q = np.zeros((len(total_vocab)))
 
         counter = Counter(tokens)
         words_count = len(tokens)
+
+        query_weights = {}
 
         for token in np.unique(tokens):
 
@@ -168,68 +215,41 @@ def get_tfidf(input):
             idf = math.log((url+1)/(df+1))
 
             try:
-                idx = totalword.index(token)
-                query[idx] = tf*idf
+                ind = total_vocab.index(token)
+                Q[ind] = tf*idf
             except:
                 pass
-        return query
+        return Q
 
     def cosine_similarity(k, query):
+        # print("Cosine Similarity")
         preprocessed_query = preprocess(query)
         tokens = word_tokenize(str(preprocessed_query))
+
+        # print("\nQuery:", query)
+        # print("")
+        # print(tokens)
+
         d_cosines = []
+
         query_vector = gen_vector(tokens)
 
         for d in D:
             d_cosines.append(cosine_sim(query_vector, d))
+
         out = np.array(d_cosines).argsort()[-k:][::-1]
-        # print(np.array(d_cosines).argsort()[-k:][::-1])
-        # print(d_cosines)
+        time_2f = '%.2f' % (time.time() - start_time)
+        times = ((" %s seconds " % time_2f))
 
-        totaltime = '%.2f' % (time.time() - start)
-        times = ((" %s seconds " % totaltime))
-        ranking = {}
+        Ranking = {}
         for x in range(0, url):
-            ranking[out[x]] = arrayURL[x]
-        # print(ranking[x])
-        return tokens, dict(sorted(ranking.items())), times, sorted(d_cosines)
+            Ranking[out[x]] = DocID[x]
+            # print(DocID[x])
 
-    # query = cosine_similarity(url, input)
+        cpu = psutil.cpu_percent(interval=1)
+        memory = psutil.swap_memory()[3]
+        disk = psutil.disk_usage('/')[3]
+        return tokens, dict(sorted(Ranking.items(), reverse=True)), times, cpu, memory, disk, (d_cosines)
 
-    def matching_score(k, query):
-        preprocessed_query = preprocess(query)
-        tokens = word_tokenize(str(preprocessed_query))
-
-        print("Matching Score")
-        print("\nQuery:", query)
-        print("")
-        print(tokens)
-
-        query_weights = {}
-
-        for key in tf_idf:
-
-            if key[1] in tokens:
-                try:
-                    query_weights[key[0]] += tf_idf[key]
-                except:
-                    query_weights[key[0]] = tf_idf[key]
-
-        query_weights = sorted(query_weights.items(),
-                               key=lambda x: x[1], reverse=True)
-
-        print(query_weights)
-        print("")
-
-        l = []
-
-        for i in query_weights:
-            l.append(i[0])
-        geturl = []
-        for i in l:
-            geturl.append(arrayURL[i])
-        print(l)
-
-        return tokens, l, geturl, query_weights
-    Q = matching_score(url, input)
+    Q = cosine_similarity(url, Input)
     return Q

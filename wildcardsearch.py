@@ -1,16 +1,13 @@
 import re
 import tfidf
+import pandas as pd
 
 
 def getRanking(result):
     regex = re.compile(result)
-    l = ['this', 'is', 'just', 'a', 'test', 'thos',
-         'thus', 'isad', 'isu', 'thailand', 'thinanus']
-    matches = [string for string in l if re.match(regex, string)]
-
-    print(matches)
-    for i in matches:
-        print(i)
+    df = pd.read_csv("DataSetTest.csv")
+    matches = [i for i in df if re.match(regex, i)]
 
 
-getRanking("i")
+
+getRanking("fox")

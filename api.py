@@ -5,6 +5,8 @@ import hashs
 import inverted
 import main
 import time
+import tfidf
+import tf2
 app = Flask(__name__)
 
 
@@ -22,8 +24,9 @@ def result():
         result = request.form['text']
         if(len(result) == 0):
             return render_template("notfound.html", error=re['Error'])
-    Ranking = main.wildcard(result)
-    return render_template("layout.html", result=result, Ranking=Ranking)
+        listresult = main.wildcard(result)
+
+    return render_template("layout.html", result=listresult)
 
 
 @app.route('/result/InvertedIndex/<result>', methods=['POST', 'GET'])
@@ -64,6 +67,16 @@ def geturlTree(result):
     print(result)
     totaltime = time.time()-start
     return render_template('binarysearchtree.html', result=result, bst=bst, time=totaltime)
+
+
+@app.route('/result/geturlTF-IDF/<result>', methods=['POST', 'GET'])
+def Cosine(result):
+    start = time.time()
+    result = result
+    cosine = tfidf.get_tfidf(result)
+    print(result)
+    totaltime = time.time()-start
+    return render_template('geturlTF-IDF.html', result=result, cosine=cosine, time=totaltime, tokens=cosine[0], Ranking=cosine[1], Score=cosine[3], url=cosine[2])
 
 
 if __name__ == "__main__":

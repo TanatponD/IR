@@ -6,13 +6,7 @@ import pandas as pd
 def wildcard(input):
     regex = re.compile(input)
     df = pd.read_csv("DataSetTest.csv")
-    matches = [string for string in df if re.match(regex, string)]
+    matches = [i for i in df if re.match(regex, i)]
 
-    Ranking = []
-
-    for i in matches:
-        Ranking.append(tfidf.get_tfidf(i))
-
-    print(Ranking)
-    return Ranking
-
+    print(matches)
+    return (matches)
