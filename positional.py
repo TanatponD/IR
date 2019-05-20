@@ -68,7 +68,6 @@ def intersec(search, dicts):
 
 
 def Searching(wordsearchs):
-    start = time.time()
     geturl = {}
     word = wordsearchs.lower()  # ทำให้เป็นตัวพิมพ์เล็ก
     wordsearchs = stem(word)  # ตัด stopword ออก
@@ -105,5 +104,7 @@ def Searching(wordsearchs):
 
         if flag == 0:
             print("Not Match")
-    totaltime = time.time()-start
     return geturl
+
+
+# print(Searching("house be a good home"))

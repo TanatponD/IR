@@ -6,7 +6,7 @@ import inverted
 import main
 import time
 import tfidf
-import tf2
+
 app = Flask(__name__)
 
 
@@ -24,7 +24,23 @@ def result():
         result = request.form['text']
         if(len(result) == 0):
             return render_template("notfound.html", error=re['Error'])
-        listresult = main.wildcard(result)
+        x = result.split(" ")
+        if len(x) > 1:
+            listresult = main.wildcard(result)
+            if len(listresult) == 0:
+                return render_template("notfound.html", error=re['Error'])
+            else:
+                start = time.time()
+                listresult = result
+                cosine = tfidf.get_tfidf(result)
+                print(result)
+                totaltime = time.time()-start
+
+                return render_template("geturlTF-IDF.html", result=listresult, cosine=cosine, time=totaltime, tokens=cosine[0], Ranking=cosine[1], Score=cosine[3], url=cosine[2])
+        else:
+            listresult = main.wildcard(result)
+            if len(listresult) == 0:
+                return render_template("notfound.html", error=re['Error'])
 
     return render_template("layout.html", result=listresult)
 
